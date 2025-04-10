@@ -49,6 +49,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UserController = void 0;
@@ -63,16 +66,56 @@ let UserController = class UserController {
     findAll() {
         return this.service.findAll();
     }
+    findOne(id) {
+        return this.service.findOne(id);
+    }
+    create(payload) {
+        return this.service.create(payload);
+    }
+    update(data) {
+        return this.service.update(data.id, { name: data.name, age: data.age });
+    }
+    delete(id) {
+        return this.service.delete(id);
+    }
 };
 exports.UserController = UserController;
 __decorate([
-    (0, microservices_1.MessagePattern)('user.all'),
+    (0, microservices_1.MessagePattern)("user.all"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "findAll", null);
+__decorate([
+    (0, microservices_1.MessagePattern)("user.one"),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "findOne", null);
+__decorate([
+    (0, microservices_1.MessagePattern)("user.create"),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "create", null);
+__decorate([
+    (0, microservices_1.MessagePattern)("user.update"),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "update", null);
+__decorate([
+    (0, microservices_1.MessagePattern)("user.delete"),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "delete", null);
 exports.UserController = UserController = __decorate([
-    (0, common_1.Controller)('user'),
+    (0, common_1.Controller)("user"),
     __metadata("design:paramtypes", [typeof (_a = typeof user_service_1.UserService !== "undefined" && user_service_1.UserService) === "function" ? _a : Object])
 ], UserController);
 
@@ -97,17 +140,11 @@ exports.UserModule = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
 const user_controller_1 = __webpack_require__(/*! ./user.controller */ "./apps/user-service/src/user/user.controller.ts");
 const user_service_1 = __webpack_require__(/*! ./user.service */ "./apps/user-service/src/user/user.service.ts");
-const microservices_1 = __webpack_require__(/*! @nestjs/microservices */ "@nestjs/microservices");
 let UserModule = class UserModule {
 };
 exports.UserModule = UserModule;
 exports.UserModule = UserModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            microservices_1.ClientsModule.register([{
-                    name: Transe
-                }])
-        ],
         controllers: [user_controller_1.UserController],
         providers: [user_service_1.UserService]
     })
@@ -132,13 +169,45 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UserService = void 0;
 const common_1 = __webpack_require__(/*! @nestjs/common */ "@nestjs/common");
+const users = [
+    { id: 1, name: "asd", age: 23 },
+    { id: 2, name: "aefa", age: 23 },
+    { id: 3, name: "afas", age: 23 },
+];
 let UserService = class UserService {
     findAll() {
-        return [
-            { name: "asd", age: 23 },
-            { name: "aefa", age: 23 },
-            { name: "afas", age: 23 },
-        ];
+        return { data: users };
+    }
+    findOne(id) {
+        let user = users.find((i) => i.id == id);
+        if (!user) {
+            return { message: "User topilmadi" };
+        }
+        return { data: user };
+    }
+    create(user) {
+        const newUser = {
+            id: users.length + 1,
+            ...user,
+        };
+        users.push(newUser);
+        return { data: newUser };
+    }
+    update(id, user) {
+        const index = users.findIndex((i) => i.id == id);
+        if (index == -1) {
+            return { message: "User topilmadi" };
+        }
+        users[index] = { ...users[index], ...user };
+        return { data: users[index] };
+    }
+    delete(id) {
+        const index = users.findIndex((i) => i.id == id);
+        if (index == -1) {
+            return { message: "User topilmadi" };
+        }
+        users.splice(index, 1);
+        return { message: "User o'chirildi" };
     }
 };
 exports.UserService = UserService;
